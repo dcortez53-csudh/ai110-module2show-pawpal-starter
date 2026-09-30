@@ -8,8 +8,7 @@ The system is built around four classes: Task, Pet, Owner, and Scheduler. Task r
 
 **b. Design changes**
 
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+No changes were made at this stage. The AI review flagged a few minor considerations (task-pet association in 'get_all_tasks()', description-based removal, conflict detection scope), but none required a design change before implementation. I'll revisit them if they become real issues during Phase 2.
 
 ---
 
