@@ -4,8 +4,7 @@
 
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+The system is built around four classes: Task, Pet, Owner, and Scheduler. Task represents a single care activity (a walk, feeding, medication, etc.) with a description, time, duration, priority, frequency, and completion status. Pet holds a pet's basic infor plus a list of assigned tasks. Owner holds a person's name and a list of pets, and provides a single place to access every task across all pets. Schedule is the brain, it takes an Owner and produces a daily plan by soritng tasks by time, filtering by pet or completion status, detecting time conflicts, and handling recurring tasks. I chose this four-class split because it maps cleanly to the scenario: each class owns one layer of the data, and the Scheduler handles all the algorithmic work without cluttering the data classes.
 
 **b. Design changes**
 
