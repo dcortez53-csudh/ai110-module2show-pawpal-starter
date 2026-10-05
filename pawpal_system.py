@@ -7,22 +7,44 @@ Four core classes:
     Scheduler - the brain that organizes tasks across pets
 """
 from dataclasses import dataclass, field
+from datetime import date, timedelta
 from typing import List, Optional
 
 
 @dataclass
 class Task:
     description: str
-    time: str = "08:00"            # HH:MM
+    time: str = "08:00"                            # HH:MM
     duration_minutes: int = 15
-    priority: str = "medium"       # low / medium / high
-    frequency: str = "once"        # once / daily / weekly
+    priority: str = "medium"                       # low / medium / high
+    frequency: str = "once"                        # once / daily / weekly
     completed: bool = False
-    pet_name: str = ""             # filled in when added to a Pet
+    pet_name: str = ""
+    due_date: date = field(default_factory=date.today)
 
     def mark_complete(self) -> None:
         """Mark this task as completed."""
         self.completed = True
+
+    def next_occurrence(self) -> Optional["Task"]:
+        """Return a new Task for the next occurrence, or None if not recurring."""
+        if self.frequency == "daily":
+            offset = timedelta(days=1)
+        elif self.frequency == "weekly":
+            offset = timedelta(weeks=1)
+        else:
+            return None
+
+        return Task(
+            description=self.description,
+            time=self.time,
+            duration_minutes=self.duration_minutes,
+            priority=self.priority,
+            frequency=self.frequency,
+            completed=False,
+            pet_name=self.pet_name,
+            due_date=self.due_date + offset,
+        )
 
     def to_dict(self) -> dict:
         """Return this task as a plain dictionary."""
@@ -34,6 +56,7 @@ class Task:
             "frequency": self.frequency,
             "completed": self.completed,
             "pet_name": self.pet_name,
+            "due_date": self.due_date.isoformat(),
         }
 
 
@@ -89,12 +112,17 @@ class Scheduler:
         self.owner = owner
 
     def get_todays_schedule(self) -> List[Task]:
-        """Return all tasks sorted by time."""
-        return self.sort_by_time(self.owner.get_all_tasks())
+        """Return all incomplete tasks sorted by time, then priority."""
+        tasks = self.owner.get_all_tasks()
+        return self.sort_by_time([t for t in tasks if not t.completed])
 
     def sort_by_time(self, tasks: List[Task]) -> List[Task]:
-        """Return tasks sorted by HH:MM time string."""
-        return sorted(tasks, key=lambda t: t.time)
+        """Return tasks sorted by HH:MM time; break ties by priority."""
+        priority_rank = {"high": 0, "medium": 1, "low": 2}
+        return sorted(
+            tasks,
+            key=lambda t: (t.time, priority_rank.get(t.priority, 1)),
+        )
 
     def filter_by_pet(self, pet_name: str) -> List[Task]:
         """Return tasks belonging to a given pet."""
@@ -121,20 +149,12 @@ class Scheduler:
                 seen[task.time] = task.description
         return warnings
 
-    def handle_recurring(self, task: Task) -> Optional[Task]:
-        """If a completed task is recurring, create the next occurrence."""
-        if not task.completed or task.frequency == "once":
-            return None
-        new_task = Task(
-            description=task.description,
-            time=task.time,
-            duration_minutes=task.duration_minutes,
-            priority=task.priority,
-            frequency=task.frequency,
-            completed=False,
-            pet_name=task.pet_name,
-        )
-        pet = self.owner.find_pet(task.pet_name)
-        if pet:
-            pet.add_task(new_task)
+    def complete_task(self, task: Task) -> Optional[Task]:
+        """Mark a task complete and add its next occurrence if recurring."""
+        task.mark_complete()
+        new_task = task.next_occurrence()
+        if new_task:
+            pet = self.owner.find_pet(task.pet_name)
+            if pet:
+                pet.add_task(new_task)
         return new_task
