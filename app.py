@@ -13,11 +13,11 @@ tasks, and generate a daily plan that sorts by time and warns about conflicts.
 """
 )
 
-# --- Session state: the Owner survives reruns ---
 if "owner" not in st.session_state:
     st.session_state.owner = Owner(name="Jordan")
 
 owner = st.session_state.owner
+scheduler = Scheduler(owner)
 
 # --- Owner ---
 st.subheader("Owner")
@@ -97,17 +97,38 @@ else:
 
 st.divider()
 
+# --- Mark a Task Complete (exercises recurrence) ---
+st.subheader("Complete a Task")
+pending = [t for t in owner.get_all_tasks() if not t.completed]
+if not pending:
+    st.info("No pending tasks to complete.")
+else:
+    task_labels = [f"{t.pet_name}: {t.description} @ {t.time}" for t in pending]
+    chosen_label = st.selectbox("Choose a task to mark complete", task_labels, key="complete_pick")
+    chosen_task = pending[task_labels.index(chosen_label)]
+
+    if st.button("Mark complete"):
+        next_task = scheduler.complete_task(chosen_task)
+        if next_task is None:
+            st.success(f"'{chosen_task.description}' marked complete. No recurrence.")
+        else:
+            st.success(
+                f"'{chosen_task.description}' marked complete. "
+                f"Next occurrence created for {next_task.due_date}."
+            )
+
+st.divider()
+
 # --- Generate Schedule ---
 st.subheader("Build Schedule")
 
 if st.button("Generate schedule"):
-    scheduler = Scheduler(owner)
     schedule = scheduler.get_todays_schedule()
 
     if not schedule:
         st.info("No tasks to schedule yet.")
     else:
-        st.success(f"Today's schedule for {owner.name}")
+        st.success(f"Today's schedule for {owner.name} — {len(schedule)} task(s)")
         st.table([
             {
                 "time": t.time,
@@ -121,8 +142,8 @@ if st.button("Generate schedule"):
 
         conflicts = scheduler.detect_conflicts(schedule)
         if conflicts:
-            st.warning("Conflicts detected:")
+            st.warning(f"⚠️ {len(conflicts)} conflict(s) detected:")
             for warning in conflicts:
                 st.write(f"- {warning}")
         else:
-            st.info("No conflicts detected.")
+            st.success("No conflicts detected.")

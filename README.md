@@ -108,12 +108,39 @@ tests/test_pawpal.py::test_completed_tasks_are_excluded_from_schedule PASSED    
 
 ## 📸 Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+1. User opens the app. The main view shows four sections: Owner, Add a Pet, Add a Task, Complete a Task, and Build Schedule.
+2. User enters an owner name (default "Jordan") and adds a pet — for example, "Mochi", species dog.
+3. The Current Pets table updates to show Mochi with 0 tasks.
+4. User selects Mochi from the "For pet" dropdown and adds a task — for example, "Morning walk", 08:00, 20 min, high priority, frequency "once".
+5. The Current Tasks table shows the new task with all its attributes.
+6. User adds a second task at the same time (08:00) — "Medication", 5 min, high priority — to demonstrate a conflict.
+7. User clicks **Generate schedule**. The Scheduler retrieves all incomplete tasks, sorts them by time (ties broken by priority), and displays them as a table.
+8. Below the schedule, a warning appears: "Conflict at 08:00: 'Morning walk' and 'Medication'".
+9. If the user marks a daily task complete, a new task appears in the pet's list due the next day.
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+### Features
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+- **Sorting by time** — `Scheduler.sort_by_time()` returns tasks in chronological order, with priority as a tie-breaker.
+- **Filtering** — `Scheduler.filter_by_pet()` and `Scheduler.filter_by_status()` narrow the schedule by pet or completion state.
+- **Conflict warnings** — `Scheduler.detect_conflicts()` returns human-readable warnings for tasks with duplicate start times.
+- **Daily and weekly recurrence** — `Task.next_occurrence()` uses `timedelta` to generate the next instance; `Scheduler.complete_task()` wires it into the schedule automatically.
+
+### CLI Sample Output
+
+```
+Today's Schedule for Dennis
+============================================================
+07:30  Whiskers   Feeding (5 min, priority: high)
+08:00  Biscuit    Morning walk (30 min, priority: high)
+09:00  Biscuit    Feeding (10 min, priority: high)
+14:00  Whiskers   Play time (20 min, priority: medium)
+18:00  Biscuit    Evening walk (30 min, priority: high)
+
+Conflict check:
+  Conflict at 08:00: 'Morning walk' and 'Medication'
+
+Before completion: 6 tasks for Whiskers
+Marked 'Daily feeding' complete.
+Next occurrence due: 2026-10-06 at 07:00
+After completion: 7 tasks for Whiskers
+```
