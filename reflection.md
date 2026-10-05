@@ -16,13 +16,11 @@ No changes were made at this stage. The AI review flagged a few minor considerat
 
 **a. Constraints and priorities**
 
-- What constraints does your scheduler consider (for example: time, priority, preferences)?
-- How did you decide which constraints mattered most?
+The scheduler considers three constraints: task time ('HH:MM''), priority level (low/medium/high), and completion status. Time is the primary sort key because a pet owner's day is anchored to specific moments: morning walk, evening feeding, medication windows. Priority is used as a tie-breaker when two tasks share the same time, so high-priority items appear first if there's a conflict. Completion status is used to filter out tasks already done for the day, so the schedule only shows what's still outstanding.
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+The scheduler only checks for **exact time matches** when detecing conflicts, not overlapping durations. A 30-minute walk starting at 08:00 and a 10-minute feeding starting at 08:15 will not be flagged, even though the feeding overlaps the walk. This tradeoff is reasonable because (a) the project spec asks for "basic conflict detection," and (b) a strict overlap check would require normalizing times into datetime objects and comparing intervals, which adds complexity for a demo. The current approach catches the most common real-world case: two tasks scheduled at the exact same minute.
 
 ---
 
