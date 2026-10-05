@@ -66,10 +66,34 @@ pytest
 pytest --cov
 ```
 
+The suite covers 11 tests across five areas:
+- **Task basics** — `mark_complete()` flips the status flag; adding a task increases `Pet.task_count()`
+- **Sorting** — tasks are returned in chronological order; same-time tasks sort by priority (high → medium → low)
+- **Recurrence** — daily tasks spawn a new instance due tomorrow; weekly tasks spawn one due in 7 days; one-time tasks do not recur
+- **Conflicts** — duplicate times produce a warning; unique times return an empty list
+- **Edge cases** — empty owner returns an empty schedule; completed tasks are excluded from today's schedule
+
 Sample test output:
 
 ```
-# Paste your pytest output here
+collected 11 items
+
+tests/test_pawpal.py::test_mark_complete_changes_status PASSED                       [  9%]
+tests/test_pawpal.py::test_add_task_increases_count PASSED                           [ 18%]
+tests/test_pawpal.py::test_sort_by_time_returns_chronological_order PASSED           [ 27%]
+tests/test_pawpal.py::test_sort_by_time_breaks_ties_with_priority PASSED             [ 36%]
+tests/test_pawpal.py::test_daily_task_creates_next_day_occurrence PASSED             [ 45%]
+tests/test_pawpal.py::test_weekly_task_creates_next_week_occurrence PASSED           [ 54%]
+tests/test_pawpal.py::test_once_task_does_not_recur PASSED                           [ 63%]
+tests/test_pawpal.py::test_detect_conflicts_flags_duplicate_times PASSED             [ 72%]
+tests/test_pawpal.py::test_detect_conflicts_returns_empty_for_unique_times PASSED    [ 81%]
+tests/test_pawpal.py::test_empty_owner_has_empty_schedule PASSED                     [ 90%]
+tests/test_pawpal.py::test_completed_tasks_are_excluded_from_schedule PASSED         [100%]
+
+==================================== 11 passed in 0.06s ====================================
+```
+
+**Confidence level:** ⭐⭐⭐⭐ (4/5)
 ```
 
 ## 📐 Smarter Scheduling
