@@ -3,3 +3,9 @@ __pycache__/
 .venv_new/
 .pytest_cache/
 .DS_Store.idea/
+
+__pycache__/
+*.pyc
+.pytest_cache/
+.idea/
+
